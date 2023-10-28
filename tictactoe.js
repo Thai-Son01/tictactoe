@@ -48,9 +48,6 @@ function GameBoard(){
     //getter
     const getBoard = ()=> board;
 
-    const assignBoard = (board)=> {
-
-    }
     //exposer les fonctions quon veut montrer
     return {getBoard, printBoard, placeToken, getLegalMoves, resetToken};
 }
@@ -108,42 +105,6 @@ function GameController(botGame = false){
         }
     }
     
-    const testFunction = () => {
-        const testBoard = GameBoard();
-        let testPurpose = [[2,1,0],
-                           [0,1,0],
-                           [0,0,0]];
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j< 3; j++) {
-                testBoard.placeToken(testPurpose[i][j], i, j);
-            }
-        }
-        testBoard.printBoard();
-        let bestMove;
-        let bestScore = -Infinity;
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j< 3; j++) {
-                if(testBoard.getBoard()[i][j].getValue() === 0) {
-                    testBoard.placeToken(2, i, j);
-                    console.log("BEFORE CALLING MINIMAX");
-                    testBoard.printBoard();
-                    let result = minimax(testBoard, 3, false);
-                    console.log("THIS SHOULD BE THE RESULT");
-                    console.log(result);
-                    testBoard.resetToken(i, j);
-                    console.log("AFTER CALLING MINIMAX");
-                    testBoard.printBoard();
-                    if (result > bestScore) {
-                        // console.log("INSIDE THE IF")
-                        bestScore = result;
-                        // console.log(bestScore);
-                        bestMove = {i,j};
-                    }
-                }
-            }
-        }
-        console.log(bestMove);
-    }
 
     const botMove = (board)=> {
         let bestMove;
@@ -152,9 +113,6 @@ function GameController(botGame = false){
         for(let i = 0; i < legalMoves.length; i++) {
             board.placeToken(2, legalMoves[i].i, legalMoves[i].j);
             let boardValue = minimax(gameBoard, 9 - legalMoves.length, false);
-            console.log("AFTER CALLING MINMAX");
-            console.log(boardValue);
-            board.printBoard();
             board.resetToken(legalMoves[i].i, legalMoves[i].j);
             if (boardValue > score) {
                 score = boardValue;
@@ -164,6 +122,7 @@ function GameController(botGame = false){
 
         return bestMove;
     }
+
     const scores = {
         "player1" : -10,
         "player2" : 10,
@@ -183,14 +142,11 @@ function GameController(botGame = false){
             let bestScore = -Infinity;
 
             for(let i = 0; i < legalMoves.length; i++) {
-                // board.placeToken(2, legalMoves[i].i, legalMoves[i].j,);
-                board.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(2);
+                board.placeToken(2, legalMoves[i].i, legalMoves[i].j,);
                 let boardValue = minimax(board,depth + 1, false);
                 bestScore = Math.max(boardValue, bestScore); 
-                board.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(0);
-                // board.resetToken(legalMoves[i].i, legalMoves[i].j);
+                board.resetToken(legalMoves[i].i, legalMoves[i].j);
             }
-            // return bestScore - depth;
             return bestScore;
         }
 
@@ -199,14 +155,11 @@ function GameController(botGame = false){
             let bestScore = Infinity;
 
             for(let i = 0; i < legalMoves.length; i++) {
-                // board.placeToken(1, legalMoves[i].i, legalMoves[i].j,);
-                board.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(1);
+                board.placeToken(1, legalMoves[i].i, legalMoves[i].j,);
                 let test = minimax(board, depth + 1, true);
                 bestScore = Math.min(test, bestScore);
-                // board.resetToken(legalMoves[i].i, legalMoves[i].j);
-                board.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(0);
+                board.resetToken(legalMoves[i].i, legalMoves[i].j);
             }
-            // return bestScore + depth;
             return bestScore;
         }
     }
@@ -244,7 +197,7 @@ function GameController(botGame = false){
         }
         return endGameState;
     }
-    return {placeToken, testFunction};
+    return {placeToken};
 }
 
 
