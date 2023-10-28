@@ -123,8 +123,8 @@ function GameController(botGame = false){
     }
 
     const scores = {
-        "player1" : -10,
-        "player2" : 10,
+        "player1" : -1,
+        "player2" : 1,
         "tie": 0
     }
 
