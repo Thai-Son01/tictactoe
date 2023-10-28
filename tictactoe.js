@@ -48,6 +48,9 @@ function GameBoard(){
     //getter
     const getBoard = ()=> board;
 
+    const assignBoard = (board)=> {
+
+    }
     //exposer les fonctions quon veut montrer
     return {getBoard, printBoard, placeToken, getLegalMoves, resetToken};
 }
@@ -74,8 +77,8 @@ function GameController(botGame = false){
         if (activePlayer === players[0]) {
             activePlayer = players[1];
             if(botGame === true) {
-                const move = botMove();
-                console.log(move);
+                const move = botMove(gameBoard);
+                // console.log(move);
                 placeToken(move.row, move.column);
             }
         }
@@ -93,6 +96,7 @@ function GameController(botGame = false){
     const placeToken = (row, column)=> {
         if(gameBoard.placeToken(activePlayer.playerNumber, row, column)) {
             showGameState();
+            // let winBoard = gameBoard.getBoard().map((row) => row.map((cell) => cell.getValue()));
             let gameState = checkWinCondition(gameBoard);
             if(!gameState) {
                 switchPlayer();
@@ -105,37 +109,65 @@ function GameController(botGame = false){
             }
         }
     }
-    const botMove = ()=> {
-        let bestMove;
-        let score = -Infinity;
-        const legalMoves = gameBoard.getLegalMoves();
-
-        for(let i = 0; i < legalMoves.length; i++) {
-            // gameBoard.placeToken(2, legalMoves[i].i, legalMoves[i].j);
-            gameBoard.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(2);
-            let boardValue = minimax(gameBoard,0, false); 
-            gameBoard.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(0);
-            // gameBoard.resetToken(legalMoves[i].i, legalMoves[i].j);
-            if (boardValue > score) {
-                score = boardValue;
-                console.log(score);
-                bestMove = {row : legalMoves[i].i , column : legalMoves[i].j}
+    
+    const testFunction = () => {
+        const testBoard = GameBoard();
+        let testPurpose = [[1,1,2],
+                           [0,1,0],
+                           [0,0,2]];
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j< 3; j++) {
+                testBoard.placeToken(testPurpose[i][j], i, j);
             }
         }
-        // for(let i = 0; i < 3; i++) { 
-        //     for (let j = 0; j < 3; j++) {
-        //         if (gameBoard.getBoard()[i][j].getValue() === 0) {
-        //             gameBoard.placeToken(2, j, i);
-        //             let boardValue = minimax(gameBoard, false);
-        //             gameBoard.resetToken(i,j)
-        //             if (boardValue > score) {
-        //                 score = boardValue;
-        //                 bestMove.row = i;
-        //                 bestMove.column = j;
-        //             }
-        //         }
-        //     }
-        // }
+        testBoard.printBoard();
+        let bestMove;
+        let bestScore = -Infinity;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j< 3; j++) {
+                if(testBoard.getBoard()[i][j].getValue() === 0) {
+                    testBoard.placeToken(2, i, j);
+                    console.log("BEFORE CALLING MINIMAX");
+                    testBoard.printBoard();
+                    let result = minimax(testBoard, 4, false);
+                    console.log("THIS SHOULD BE THE RESULT");
+                    console.log(result);
+                    testBoard.resetToken(i, j);
+                    console.log("AFTER CALLING MINIMAX");
+                    testBoard.printBoard();
+                    if (result > bestScore) {
+                        // console.log("INSIDE THE IF")
+                        bestScore = result;
+                        // console.log(bestScore);
+                        bestMove = {i,j};
+                    }
+                }
+            }
+        }
+        console.log(bestMove);
+    }
+
+    const botMove = (board)=> {
+        let bestMove;
+        let score = -Infinity;
+        const legalMoves = board.getLegalMoves();
+        console.log(legalMoves);
+        for(let i = 0; i < legalMoves.length; i++) {
+            // gameBoard.placeToken(2, legalMoves[i].i, legalMoves[i].j);
+            board.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(2);
+            showGameState();
+            let boardValue = minimax(gameBoard,0, false); 
+            board.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(0);
+            // gameBoard.resetToken(legalMoves[i].i, legalMoves[i].j);
+            console.log(boardValue);
+            if (boardValue > score) {
+                score = boardValue;
+                // console.log(score);
+                bestMove = {row : legalMoves[i].i , column : legalMoves[i].j}
+                break;
+            }
+        }
+
         return bestMove;
     }
     const scores = {
@@ -145,23 +177,28 @@ function GameController(botGame = false){
     }
 
     function minimax(board,depth,isMaximize) {
+
         let result = checkWinCondition(board); // tie, player1 ou player2 a la fin d'une game might be the problem lol
         let legalMoves = board.getLegalMoves();
+        // console.log("NUMBER LEGAL MOVES LEFT");
+        // console.log(legalMoves.length);
         if (result != null || legalMoves.length === 0) {
-            if (scores[result] < 0) {
-                return scores[result] + depth;
-            }
-            else if (scores[result] > 0) {
-                return scores[result] - depth;
-            }
-            else {
-                return scores[result];
-            }
+            // console.log(`winner : ${result}`);
+            // console.log(`score : ${scores[result]}`);
+            return scores[result];
+            // if (scores[result] < 0) {
+            //     return scores[result] + depth;
+            // }
+            // else if (scores[result] > 0) {
+            //     return scores[result] - depth;
+            // }
+            // else {
+            //     return scores[result];
+            // }
         }
 
         if (isMaximize) {
             let bestScore = -Infinity;
-            // const legalMoves = board.getLegalMoves();
 
             for(let i = 0; i < legalMoves.length; i++) {
                 // board.placeToken(2, legalMoves[i].i, legalMoves[i].j,);
@@ -171,86 +208,60 @@ function GameController(botGame = false){
                 // board.resetToken(legalMoves[i].i, legalMoves[i].j);
                 board.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(0);
             }
-            return bestScore - depth;
+            // return bestScore - depth;
+            return bestScore;
         }
-        // if (isMaximize) {
-        //     let bestScore = -Infinity;
-        //     for(let i = 0; i < 3; i++) { 
-        //         for (let j = 0; j < 3; j++) {
-        //             if (board.getBoard()[i][j].getValue() === 0) {
-        //                 board.placeToken(2, j, i);
-        //                 bestScore = Math.max(minimax(board, false),bestScore); 
-        //                 // console.log(boardValue);
-        //                 board.resetToken(i,j)
-        //             }
-        //         }
-        //     }
-        //     return bestScore;
-        // }
+
         
         if (!isMaximize) {
             let bestScore = Infinity;
-            // const legalMoves = board.getLegalMoves();
 
             for(let i = 0; i < legalMoves.length; i++) {
                 // board.placeToken(1, legalMoves[i].i, legalMoves[i].j,);
                 board.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(1);
                 let test = minimax(board, depth + 1, true);
                 bestScore = Math.min(test, bestScore);
-                // console.log(bestScore);
                 // board.resetToken(legalMoves[i].i, legalMoves[i].j);
                 board.getBoard()[legalMoves[i].i][legalMoves[i].j].changeValue(0);
             }
-            return bestScore + depth;
+            // return bestScore + depth;
+            return bestScore;
         }
-        // if (!isMaximize) {
-        //     let bestScore = Infinity;
-        //     for(let i = 0; i < 3; i++) { 
-        //         for (let j = 0; j < 3; j++) {
-        //             if (board.getBoard()[i][j].getValue() === 0) {
-        //                 board.placeToken(2, j, i);
-        //                 let test = minimax(board,true);
-        //                 bestScore = Math.min(test, bestScore);
-        //                 board.resetToken(i,j)
-        //             }
-        //         }
-        //     }
-        //     return bestScore;
-        // }
     }
 
-    //should check if all cases are the same, and then check for the player instead of the opposite
     const checkWinCondition = (board)=> {
         let endGameState = null;
-        const winBoard = board.getBoard().map((row) => row.map((cell) => cell.getValue()));
+        let winBoard = board.getBoard().map((row) => row.map((cell) => cell.getValue()));
         for (let i = 0; i < 3; i++) {
+            //check rows
             if (winBoard[i].every((currentValue)=> currentValue === winBoard[i][0] && winBoard[i][0] != 0)) {
                 let result = players.find(player => player.playerNumber === winBoard[i][0]);
                 endGameState = result.playerName;
                 break;
             }
-            if ((winBoard[i][0] === winBoard[i][1]) && (winBoard[i][1] === winBoard[i][2]) && winBoard[i][0] != 0 ) {
-                let result = players.find(player => player.playerNumber === winBoard[i][1]);
+            //check column
+            if ((winBoard[0][i] === winBoard[i][1]) && (winBoard[i][1] === winBoard[i][2]) && winBoard[0][i] != 0 ) {
+                let result = players.find(player => player.playerNumber === winBoard[0][i]);
                 endGameState = result.playerName;
                 break;
                 }
         }
-
+        //check diagonal
         if (((winBoard[0][0] === winBoard[1][1]) && (winBoard[1][1] === winBoard[2][2]) && winBoard[0][0] != 0)||
             (winBoard[0][2] === winBoard[1][1]) && (winBoard[1][1] === winBoard[2][1]) && winBoard[0][2] != 0) {
                 let result = players.find(player => player.playerNumber === winBoard[1][1]);
                 endGameState = result.playerName;
             }
         
-        if(gameBoard.getLegalMoves().length === 0 && endGameState === null) {
+        if(board.getLegalMoves().length === 0 && endGameState === null) {
             endGameState = "tie";
         }
         return endGameState;
     }
-    return {placeToken, minimax};
+    return {placeToken, minimax, testFunction};
 }
 
 
-const game = GameController(true);
-// const game = GameController();
+// const game = GameController(true);
+const game = GameController();
 console.log('gameStarted');
