@@ -1,11 +1,10 @@
 
 //le gameboard, responsabilite d'etre creer et rempli les cells en appelant les methodes de Cell
 function GameBoard(){
-    //var initialization
     const row = 3;
     const column = 3;
     const board = [];
-    //creating board
+
     for ( let i = 0 ; i < row; i++) {
         board[i] = []
         for (let j = 0; j < column; j++) {
